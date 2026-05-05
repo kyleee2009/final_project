@@ -1,72 +1,78 @@
 @extends('layouts.app')
 
-@section('title', 'Kategori Barang')
+@section('title', 'Dashboard')
 
 @section('content')
-    <div class="page-header">
-        <div>
-            <h2>Data Kategori Barang</h2>
-            <p>Kelola kategori untuk mengelompokkan barang gudang.</p>
+    <div class="card-grid">
+        <div class="card blue">
+            <div class="card-title">Total Barang</div>
+            <div class="card-value">{{ $totalItems }}</div>
         </div>
 
-        <a href="{{ route('categories.create') }}" class="btn btn-primary">
-            Tambah Kategori
-        </a>
+        <div class="card green">
+            <div class="card-title">Total Kategori</div>
+            <div class="card-value">{{ $totalCategories }}</div>
+        </div>
+
+        <div class="card orange">
+            <div class="card-title">Total Stok</div>
+            <div class="card-value">{{ $totalStock }}</div>
+        </div>
+
+        <div class="card red">
+            <div class="card-title">Stok Menipis</div>
+            <div class="card-value">{{ $lowStockItems }}</div>
+        </div>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
+    <div class="card-grid">
+        <div class="card green">
+            <div class="card-title">Total Barang Masuk</div>
+            <div class="card-value">{{ $totalStockIn }}</div>
         </div>
-    @endif
+
+        <div class="card red">
+            <div class="card-title">Total Barang Keluar</div>
+            <div class="card-value">{{ $totalStockOut }}</div>
+        </div>
+    </div>
 
     <div class="table-card">
+        <h2>Transaksi Terbaru</h2>
+
         <table>
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Nama Kategori</th>
-                    <th>Deskripsi</th>
-                    <th>Jumlah Barang</th>
-                    <th>Aksi</th>
+                    <th>Kode Transaksi</th>
+                    <th>Barang</th>
+                    <th>Jenis</th>
+                    <th>Jumlah</th>
+                    <th>Stok Akhir</th>
                 </tr>
             </thead>
             <tbody>
-                @forelse ($categories as $index => $category)
+                @forelse ($latestTransactions as $transaction)
                     <tr>
-                        <td>{{ $categories->firstItem() + $index }}</td>
-                        <td>{{ $category->name }}</td>
-                        <td>{{ $category->description ?? '-' }}</td>
-                        <td>{{ $category->items->count() }}</td>
+                        <td>{{ $transaction->transaction_code }}</td>
+                        <td>{{ $transaction->item->name ?? '-' }}</td>
                         <td>
-                            <div class="table-actions">
-                                <a href="{{ route('categories.edit', $category) }}" class="btn btn-warning">
-                                    Edit
-                                </a>
-
-                                <form action="{{ route('categories.destroy', $category) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus kategori ini?')">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button type="submit" class="btn btn-danger">
-                                        Hapus
-                                    </button>
-                                </form>
-                            </div>
+                            @if ($transaction->type == 'in')
+                                <span class="badge badge-in">Masuk</span>
+                            @else
+                                <span class="badge badge-out">Keluar</span>
+                            @endif
                         </td>
+                        <td>{{ $transaction->quantity }}</td>
+                        <td>{{ $transaction->stock_after }}</td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="5" class="empty-text">
-                            Belum ada data kategori.
+                            Belum ada transaksi.
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
-
-        <div class="pagination-wrapper">
-            {{ $categories->links() }}
-        </div>
     </div>
-@endsection
+@endsection=
