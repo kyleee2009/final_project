@@ -15,6 +15,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::resource('/categories', CategoryController::class);
+    Route::get('/items/{item}/barcode-label', [ItemController::class, 'barcodeLabel'])->name('items.barcode');
     Route::resource('/items', ItemController::class);
 
     Route::get('/stock/in', [StockTransactionController::class, 'stockIn'])->name('stock.in');

@@ -6,6 +6,7 @@ use App\Models\Item;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ItemController extends Controller
 {
@@ -122,8 +123,20 @@ class ItemController extends Controller
         return redirect()
             ->route('items.index')
             ->with('success', 'Data barang berhasil diperbarui.');
+        
     }
+public function barcodeLabel(Item $item)
+{
+    $barcodeValue = $item->barcode ?: $item->item_code;
 
+    $generator = new BarcodeGeneratorPNG();
+
+    $barcodeImage = base64_encode(
+        $generator->getBarcode($barcodeValue, $generator::TYPE_CODE_128, 2, 60)
+    );
+
+    return view('items.barcode-label', compact('item', 'barcodeValue', 'barcodeImage'));
+}
     public function destroy(Item $item)
     {
         $item->delete();

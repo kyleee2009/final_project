@@ -53,7 +53,11 @@
                             @endif
                         </td>
                         <td>
-                            <div class="table-actions">
+                           <div class="table-actions">
+                                <a href="{{ route('items.barcode', $item) }}" class="btn btn-primary" target="_blank">
+                                    Barcode
+                                </a>
+
                                 <a href="{{ route('items.edit', $item) }}" class="btn btn-warning">
                                     Edit
                                 </a>
