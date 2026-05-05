@@ -167,7 +167,12 @@ public function storeStockOut(Request $request)
 
         return view('stock.history', compact('transactions'));
     }
+public function printReceipt(StockTransaction $transaction)
+{
+    $transaction->load(['item.category', 'user']);
 
+    return view('stock.print', compact('transaction'));
+}
     private function generateTransactionCode($type)
     {
         $prefix = $type === 'in' ? 'TRX-IN' : 'TRX-OUT';

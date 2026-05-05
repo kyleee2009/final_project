@@ -18,3 +18,4 @@ Route::get('/stock/out', [StockTransactionController::class, 'stockOut'])->name(
 Route::post('/stock/out', [StockTransactionController::class, 'storeStockOut'])->name('stock.out.store');
 
 Route::get('/stock/history', [StockTransactionController::class, 'history'])->name('stock.history');
+Route::get('/stock/transactions/{transaction}/print', [StockTransactionController::class, 'printReceipt'])->name('stock.print');
