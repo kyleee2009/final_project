@@ -48,8 +48,15 @@
             <header class="topbar">
                 <h1>@yield('title', 'Dashboard')</h1>
                 <div class="topbar-user">
-                    Admin Gudang
-                </div>
+    <span>{{ auth()->user()->name ?? 'Admin Gudang' }}</span>
+
+    <form action="{{ route('logout') }}" method="POST" class="logout-form">
+        @csrf
+        <button type="submit" class="logout-btn">
+            Logout
+        </button>
+    </form>
+</div>
             </header>
 
             <section class="content">
