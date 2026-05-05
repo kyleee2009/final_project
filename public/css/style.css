@@ -389,3 +389,45 @@ th {
         min-width: 900px;
     }
 }
+.filter-card {
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 22px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 2fr 1.3fr 1.3fr auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+@media (max-width: 992px) {
+    .filter-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .filter-actions {
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+}

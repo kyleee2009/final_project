@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\StockTransactionController;
+use App\Http\Controllers\ReportController;
 
 Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -19,3 +20,5 @@ Route::post('/stock/out', [StockTransactionController::class, 'storeStockOut'])-
 
 Route::get('/stock/history', [StockTransactionController::class, 'history'])->name('stock.history');
 Route::get('/stock/transactions/{transaction}/print', [StockTransactionController::class, 'printReceipt'])->name('stock.print');
+
+Route::get('/reports/stock', [ReportController::class, 'stock'])->name('reports.stock');

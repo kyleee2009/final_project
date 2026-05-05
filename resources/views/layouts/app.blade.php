@@ -38,6 +38,9 @@
                 <a href="{{ route('stock.history') }}" class="{{ request()->routeIs('stock.history') ? 'active' : '' }}">
                     Riwayat Transaksi
                 </a>
+                <a href="{{ route('reports.stock') }}" class="{{ request()->routeIs('reports.stock') ? 'active' : '' }}">
+                    Laporan Stok
+                </a>
             </nav>
         </aside>
 
