@@ -159,14 +159,42 @@ public function storeStockOut(Request $request)
         ->with('success', 'Barang keluar berhasil disimpan dan stok berhasil diperbarui.');
 }
 
-    public function history()
-    {
-        $transactions = StockTransaction::with(['item', 'user'])
-            ->latest()
-            ->paginate(10);
+   public function history(Request $request)
+{
+    $query = StockTransaction::with(['item', 'user']);
 
-        return view('stock.history', compact('transactions'));
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+            $q->where('transaction_code', 'like', '%' . $search . '%')
+                ->orWhere('source_or_destination', 'like', '%' . $search . '%')
+                ->orWhereHas('item', function ($itemQuery) use ($search) {
+                    $itemQuery->where('name', 'like', '%' . $search . '%')
+                        ->orWhere('item_code', 'like', '%' . $search . '%')
+                        ->orWhere('barcode', 'like', '%' . $search . '%');
+                });
+        });
     }
+
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
+    }
+
+    if ($request->filled('start_date')) {
+        $query->whereDate('transaction_date', '>=', $request->start_date);
+    }
+
+    if ($request->filled('end_date')) {
+        $query->whereDate('transaction_date', '<=', $request->end_date);
+    }
+
+    $transactions = $query->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('stock.history', compact('transactions'));
+}
 public function printReceipt(StockTransaction $transaction)
 {
     $transaction->load(['item.category', 'user']);

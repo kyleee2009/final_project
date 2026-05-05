@@ -158,7 +158,7 @@
 
         <div class="receipt-row">
             <div class="label">Tanggal</div>
-            <div class="value">{{ $transaction->transaction_date->format('d-m-Y H:i') }}</div>
+            <div class="value">{{ $transaction->transaction_date->format('d-m-Y H:i') }} WIB</div>
         </div>
 
         <div class="receipt-row">
