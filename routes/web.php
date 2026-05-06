@@ -28,6 +28,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/stock/transactions/{transaction}/print', [StockTransactionController::class, 'printReceipt'])->name('stock.print');
 
     Route::get('/reports/stock', [ReportController::class, 'stock'])->name('reports.stock');
+    Route::get('/reports/stock/print', [ReportController::class, 'printStock'])->name('reports.stock.print');
+    
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

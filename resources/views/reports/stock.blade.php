@@ -9,9 +9,16 @@
             <p>Menampilkan kondisi stok seluruh barang di gudang.</p>
         </div>
 
-        <a href="{{ route('items.index') }}" class="btn btn-secondary">
-            Data Barang
-        </a>
+        <div class="table-actions">
+    <a href="{{ route('reports.stock.print', request()->query()) }}" class="btn btn-primary" target="_blank">
+        Cetak Laporan
+    </a>
+
+    <a href="{{ route('items.index') }}" class="btn btn-secondary">
+        Data Barang
+    </a>
+    
+</div>
     </div>
 
     <div class="card-grid">
