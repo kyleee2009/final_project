@@ -171,11 +171,17 @@ public function barcodeLabel(Item $item)
     return view('items.barcode-label', compact('item', 'barcodeValue', 'barcodeImage'));
 }
     public function destroy(Item $item)
-    {
-        $item->delete();
-
+{
+    if ($item->stockTransactions()->exists()) {
         return redirect()
             ->route('items.index')
-            ->with('success', 'Data barang berhasil dihapus.');
+            ->with('error', 'Barang tidak dapat dihapus karena sudah memiliki riwayat transaksi.');
     }
+
+    $item->delete();
+
+    return redirect()
+        ->route('items.index')
+        ->with('success', 'Data barang berhasil dihapus.');
+}
 }

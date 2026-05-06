@@ -20,6 +20,12 @@
         </div>
     @endif
 
+    @if (session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+    @endif
+
     <div class="table-card">
         <table>
             <thead>
@@ -37,7 +43,7 @@
                         <td>{{ $categories->firstItem() + $index }}</td>
                         <td>{{ $category->name }}</td>
                         <td>{{ $category->description ?? '-' }}</td>
-                        <td>{{ $category->items->count() }}</td>
+                        <td>{{ $category->items_count }}</td>
                         <td>
                             <div class="table-actions">
                                 <a href="{{ route('categories.edit', $category) }}" class="btn btn-warning">

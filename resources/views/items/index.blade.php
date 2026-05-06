@@ -19,6 +19,12 @@
             {{ session('success') }}
         </div>
     @endif
+    
+    @if (session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+    @endif
 
 <div class="filter-card">
     <form action="{{ route('items.index') }}" method="GET">
