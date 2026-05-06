@@ -20,6 +20,50 @@
         </div>
     @endif
 
+<div class="filter-card">
+    <form action="{{ route('items.index') }}" method="GET">
+        <div class="filter-row item-filter">
+            <div class="form-group">
+                <label for="search">Cari Barang</label>
+                <input 
+                    type="text" 
+                    id="search" 
+                    name="search" 
+                    class="form-control" 
+                    value="{{ request('search') }}"
+                    placeholder="Cari kode, barcode, nama, kategori, atau lokasi"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="stock_status">Status Stok</label>
+                <select id="stock_status" name="stock_status" class="form-control">
+                    <option value="">Semua Status</option>
+                    <option value="aman" {{ request('stock_status') == 'aman' ? 'selected' : '' }}>
+                        Aman
+                    </option>
+                    <option value="menipis" {{ request('stock_status') == 'menipis' ? 'selected' : '' }}>
+                        Stok Menipis
+                    </option>
+                    <option value="habis" {{ request('stock_status') == 'habis' ? 'selected' : '' }}>
+                        Habis
+                    </option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">
+                    Cari
+                </button>
+
+                <a href="{{ route('items.index') }}" class="btn btn-secondary">
+                    Reset
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
     <div class="table-card">
         <table>
             <thead>
@@ -46,8 +90,10 @@
                         <td>{{ $item->stock }} {{ $item->unit }}</td>
                         <td>{{ $item->location ?? '-' }}</td>
                         <td>
-                            @if ($item->stock <= $item->minimum_stock)
-                                <span class="badge badge-out">Stok Menipis</span>
+                           @if ($item->stock == 0)
+                                <span class="badge badge-out">Habis</span>
+                            @elseif ($item->stock <= $item->minimum_stock)
+                                <span class="badge badge-warning">Stok Menipis</span>
                             @else
                                 <span class="badge badge-in">Aman</span>
                             @endif

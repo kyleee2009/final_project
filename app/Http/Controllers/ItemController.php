@@ -10,12 +10,45 @@ use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class ItemController extends Controller
 {
-    public function index()
-    {
-        $items = Item::with('category')->latest()->paginate(10);
+   public function index(Request $request)
+{
+    $query = Item::with('category');
 
-        return view('items.index', compact('items'));
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+            $q->where('item_code', 'like', '%' . $search . '%')
+                ->orWhere('barcode', 'like', '%' . $search . '%')
+                ->orWhere('name', 'like', '%' . $search . '%')
+                ->orWhere('location', 'like', '%' . $search . '%')
+                ->orWhereHas('category', function ($categoryQuery) use ($search) {
+                    $categoryQuery->where('name', 'like', '%' . $search . '%');
+                });
+        });
     }
+
+    if ($request->filled('stock_status')) {
+        if ($request->stock_status === 'aman') {
+            $query->whereColumn('stock', '>', 'minimum_stock');
+        }
+
+        if ($request->stock_status === 'menipis') {
+            $query->where('stock', '>', 0)
+                ->whereColumn('stock', '<=', 'minimum_stock');
+        }
+
+        if ($request->stock_status === 'habis') {
+            $query->where('stock', 0);
+        }
+    }
+
+    $items = $query->latest()
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('items.index', compact('items'));
+}
 
     public function create()
     {
