@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Category;
 use App\Models\StockTransaction;
+use App\Models\StockTransactionDetail;
 
 class DashboardController extends Controller
 {
@@ -20,10 +21,15 @@ class DashboardController extends Controller
 
         $emptyStockItems = Item::where('stock', 0)->count();
 
-        $totalStockIn = StockTransaction::where('type', 'in')->sum('quantity');
-        $totalStockOut = StockTransaction::where('type', 'out')->sum('quantity');
+        $totalStockIn = StockTransactionDetail::whereHas('transaction', function ($query) {
+            $query->where('type', 'in');
+        })->sum('quantity');
 
-        $latestTransactions = StockTransaction::with('item')
+        $totalStockOut = StockTransactionDetail::whereHas('transaction', function ($query) {
+            $query->where('type', 'out');
+        })->sum('quantity');
+
+        $latestTransactions = StockTransaction::with(['details.item'])
             ->latest()
             ->take(5)
             ->get();

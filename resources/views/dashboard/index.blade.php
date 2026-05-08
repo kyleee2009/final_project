@@ -71,7 +71,7 @@
             <span>↓</span>
             <div>
                 <h3>Barang Masuk</h3>
-                <p>Catat stok barang yang masuk.</p>
+                <p>Catat beberapa barang yang masuk.</p>
             </div>
         </a>
 
@@ -79,7 +79,7 @@
             <span>↑</span>
             <div>
                 <h3>Barang Keluar</h3>
-                <p>Catat stok barang yang keluar.</p>
+                <p>Catat beberapa barang yang keluar.</p>
             </div>
         </a>
 
@@ -103,9 +103,9 @@
                 <thead>
                     <tr>
                         <th>Kode</th>
-                        <th>Barang</th>
                         <th>Jenis</th>
-                        <th>Jumlah</th>
+                        <th>Jumlah Item</th>
+                        <th>Total Qty</th>
                         <th>Cetak</th>
                     </tr>
                 </thead>
@@ -113,7 +113,6 @@
                     @forelse ($latestTransactions as $transaction)
                         <tr>
                             <td>{{ $transaction->transaction_code }}</td>
-                            <td>{{ $transaction->item->name ?? '-' }}</td>
                             <td>
                                 @if ($transaction->type == 'in')
                                     <span class="badge badge-in">Masuk</span>
@@ -121,7 +120,8 @@
                                     <span class="badge badge-out">Keluar</span>
                                 @endif
                             </td>
-                            <td>{{ $transaction->quantity }}</td>
+                            <td>{{ $transaction->details->count() }} jenis</td>
+                            <td>{{ $transaction->details->sum('quantity') }}</td>
                             <td>
                                 <a href="{{ route('stock.print', $transaction) }}" class="btn btn-primary" target="_blank">
                                     Cetak

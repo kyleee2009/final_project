@@ -8,12 +8,8 @@ class StockTransaction extends Model
 {
     protected $fillable = [
         'transaction_code',
-        'item_id',
         'user_id',
         'type',
-        'quantity',
-        'stock_before',
-        'stock_after',
         'source_or_destination',
         'description',
         'transaction_date',
@@ -23,9 +19,9 @@ class StockTransaction extends Model
         'transaction_date' => 'datetime',
     ];
 
-    public function item()
+    public function details()
     {
-        return $this->belongsTo(Item::class);
+        return $this->hasMany(StockTransactionDetail::class);
     }
 
     public function user()

@@ -23,8 +23,8 @@ class Item extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function stockTransactions()
+    public function stockTransactionDetails()
     {
-        return $this->hasMany(StockTransaction::class);
+        return $this->hasMany(StockTransactionDetail::class);
     }
 }

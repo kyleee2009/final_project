@@ -667,3 +667,29 @@ th {
         grid-template-columns: 1fr;
     }
 }
+.wide-form {
+    max-width: 100%;
+}
+
+.scan-card {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 22px;
+}
+
+.scan-card h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+.selected-items-card {
+    margin-bottom: 22px;
+    overflow-x: auto;
+}
+
+.table-input {
+    max-width: 120px;
+    padding: 8px 10px;
+}
