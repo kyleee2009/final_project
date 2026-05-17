@@ -1,3 +1,4 @@
+{{-- print.blade.php --}}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -5,9 +6,7 @@
     <title>Cetak Struk - {{ $transaction->transaction_code }}</title>
 
     <style>
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -70,6 +69,59 @@
             word-break: break-word;
         }
 
+        /* ===== TABEL DETAIL BARANG (BARU) ===== */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            margin: 6px 0;
+        }
+
+        .items-table th {
+            border-bottom: 1px solid #000;
+            padding: 3px 2px;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        .items-table td {
+            padding: 4px 2px;
+            vertical-align: top;
+            font-size: 10px;
+        }
+
+        .items-table tr:not(:last-child) td {
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .items-table .qty-col {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .items-table .stock-col {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .section-label {
+            font-size: 10px;
+            font-weight: bold;
+            margin: 8px 0 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 4px;
+            padding-top: 4px;
+            border-top: 1px solid #000;
+        }
+
         .divider {
             border-top: 1px dashed #000;
             margin: 10px 0;
@@ -108,9 +160,7 @@
             margin: 4px;
         }
 
-        .btn-secondary {
-            background: #6b7280;
-        }
+        .btn-secondary { background: #6b7280; }
 
         @page {
             size: 80mm auto;
@@ -131,57 +181,34 @@
                 padding: 8px;
             }
 
-            .actions {
-                display: none;
-            }
+            .actions { display: none; }
         }
     </style>
 </head>
 <body>
     <div class="receipt">
+
+        {{-- HEADER --}}
         <div class="receipt-header">
             <h2>Sistem Gudang</h2>
             <p>Bukti Transaksi Barang</p>
         </div>
 
+        {{-- JUDUL JENIS TRANSAKSI --}}
         <div class="receipt-title">
-            @if ($transaction->type == 'in')
-                Barang Masuk
-            @else
-                Barang Keluar
-            @endif
+            {{ $transaction->type == 'in' ? 'Barang Masuk' : 'Barang Keluar' }}
         </div>
 
+        {{-- KODE TRANSAKSI --}}
         <div class="transaction-code">
             {{ $transaction->transaction_code }}
         </div>
 
+        {{-- INFO TRANSAKSI --}}
         <div class="receipt-row">
             <div class="label">Tanggal</div>
             <div class="value">{{ $transaction->transaction_date->format('d-m-Y H:i') }} WIB</div>
         </div>
-
-        <div class="receipt-row">
-            <div class="label">Kode Barang</div>
-            <div class="value">{{ $transaction->item->item_code ?? '-' }}</div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">Barcode</div>
-            <div class="value">{{ $transaction->item->barcode ?? '-' }}</div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">Nama Barang</div>
-            <div class="value">{{ $transaction->item->name ?? '-' }}</div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">Kategori</div>
-            <div class="value">{{ $transaction->item->category->name ?? '-' }}</div>
-        </div>
-
-        <div class="divider"></div>
 
         <div class="receipt-row">
             <div class="label">Jenis</div>
@@ -191,30 +218,7 @@
         </div>
 
         <div class="receipt-row">
-            <div class="label">Jumlah</div>
-            <div class="value">
-                {{ $transaction->quantity }} {{ $transaction->item->unit ?? '' }}
-            </div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">Stok Sebelum</div>
-            <div class="value">
-                {{ $transaction->stock_before }} {{ $transaction->item->unit ?? '' }}
-            </div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">Stok Sesudah</div>
-            <div class="value">
-                {{ $transaction->stock_after }} {{ $transaction->item->unit ?? '' }}
-            </div>
-        </div>
-
-        <div class="receipt-row">
-            <div class="label">
-                {{ $transaction->type == 'in' ? 'Sumber' : 'Tujuan' }}
-            </div>
+            <div class="label">{{ $transaction->type == 'in' ? 'Sumber' : 'Tujuan' }}</div>
             <div class="value">{{ $transaction->source_or_destination ?? '-' }}</div>
         </div>
 
@@ -223,9 +227,56 @@
             <div class="value">{{ $transaction->user->name ?? 'Admin Gudang' }}</div>
         </div>
 
+        <div class="divider"></div>
+
+        {{-- ===== DETAIL BARANG (LOOP) ===== --}}
+        <div class="section-label">Detail Barang</div>
+
+        @php $totalQty = 0; @endphp
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%">Barang</th>
+                    <th class="qty-col" style="width: 15%">Qty</th>
+                    <th class="stock-col" style="width: 20%">Sblm</th>
+                    <th class="stock-col" style="width: 25%">Ssdh</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($transaction->details as $detail)
+                    @php $totalQty += $detail->quantity; @endphp
+                    <tr>
+                        <td>
+                            <strong>{{ $detail->item->name ?? '-' }}</strong><br>
+                            <span style="color:#555">{{ $detail->item->item_code ?? '' }}</span>
+                        </td>
+                        <td class="qty-col">
+                            {{ $detail->quantity }}<br>
+                            <span style="color:#555">{{ $detail->item->unit ?? '' }}</span>
+                        </td>
+                        <td class="stock-col">{{ $detail->stock_before }}</td>
+                        <td class="stock-col">{{ $detail->stock_after }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#999;">
+                            Tidak ada data barang
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+
+        {{-- TOTAL --}}
+        <div class="summary-row">
+            <span>Total Item: {{ $transaction->details->count() }}</span>
+            <span>Total Qty: {{ $totalQty }}</span>
+        </div>
+
+        {{-- KETERANGAN (jika ada) --}}
         @if ($transaction->description)
             <div class="divider"></div>
-
             <div class="receipt-row">
                 <div class="label">Ket.</div>
                 <div class="value">{{ $transaction->description }}</div>
@@ -238,16 +289,12 @@
             <p>Struk ini dicetak otomatis oleh Sistem Gudang.</p>
             <p>Terima kasih.</p>
         </div>
+
     </div>
 
     <div class="actions">
-        <button onclick="window.print()" class="btn">
-            Cetak Struk
-        </button>
-
-        <a href="{{ route('stock.history') }}" class="btn btn-secondary">
-            Kembali
-        </a>
+        <button onclick="window.print()" class="btn">Cetak Struk</button>
+        <a href="{{ route('stock.history') }}" class="btn btn-secondary">Kembali</a>
     </div>
 </body>
 </html>
