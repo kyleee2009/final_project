@@ -45,13 +45,13 @@
 
                 <div class="form-group">
                     <label for="barcode">Barcode</label>
-                    <input 
+                   <input 
                         type="text" 
                         id="barcode" 
                         name="barcode" 
-                        class="form-control" 
-                        value="{{ old('barcode') }}"
-                        placeholder="Scan / input barcode"
+                        class="form-control"
+                        value="{{ old('barcode', request('barcode')) }}"  {{-- tambahkan request('barcode') --}}
+                        placeholder="Scan barcode atau isi manual"
                     >
                 </div>
             </div>

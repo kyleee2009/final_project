@@ -158,6 +158,31 @@
         </form>
     </div>
 
+    {{-- Modal Barang Tidak Ditemukan --}}
+    <div id="notFoundModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; padding:28px; width:340px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+            <div style="font-size:40px; margin-bottom:12px;">⚠️</div>
+            <h3 style="margin:0 0 8px; font-size:16px;">Barang Tidak Ditemukan</h3>
+            <p style="font-size:13px; color:#555; margin-bottom:6px;">
+                Barcode yang discan tidak terdaftar di database:
+            </p>
+            <div id="modalBarcodeValue" style="font-size:14px; font-weight:bold; background:#f3f4f6; padding:8px 12px; border-radius:8px; margin-bottom:20px; word-break:break-all;">
+                -
+            </div>
+            <p style="font-size:12px; color:#888; margin-bottom:20px;">
+                Apakah ingin mendaftarkan barang baru dengan barcode ini?
+            </p>
+            <div style="display:flex; gap:10px; justify-content:center;">
+                <a id="addNewItemBtn" href="#" class="btn btn-primary" style="font-size:13px; padding:9px 16px;">
+                    + Tambah Barang Baru
+                </a>
+                <button onclick="closeNotFoundModal()" class="btn btn-secondary" style="font-size:13px; padding:9px 16px;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const barcodeInput = document.getElementById('barcode_input');
         const itemSelect = document.getElementById('item_select');
@@ -166,9 +191,31 @@
         const addItemBtn = document.getElementById('addItemBtn');
         const selectedItemsBody = document.getElementById('selectedItemsBody');
         const stockOutForm = document.getElementById('stockOutForm');
+        const notFoundModal = document.getElementById('notFoundModal');
+        const modalBarcodeValue = document.getElementById('modalBarcodeValue');
+        const addNewItemBtn = document.getElementById('addNewItemBtn');
 
         let selectedItems = {};
 
+        // ===== MODAL FUNCTIONS =====
+        function showNotFoundModal(scannedValue) {
+            modalBarcodeValue.textContent = scannedValue;
+            addNewItemBtn.href = '{{ route('items.create') }}?barcode=' + encodeURIComponent(scannedValue);
+            notFoundModal.style.display = 'flex';
+        }
+
+        function closeNotFoundModal() {
+            notFoundModal.style.display = 'none';
+            barcodeInput.value = '';
+            barcodeInput.focus();
+        }
+
+        // Tutup modal jika klik area luar
+        notFoundModal.addEventListener('click', function (e) {
+            if (e.target === notFoundModal) closeNotFoundModal();
+        });
+
+        // ===== ITEM FUNCTIONS =====
         function getSelectedOption() {
             return itemSelect.options[itemSelect.selectedIndex];
         }
@@ -192,9 +239,7 @@
         function findItemByCode(codeValue) {
             const scannedValue = codeValue.trim();
 
-            if (scannedValue === '') {
-                return false;
-            }
+            if (scannedValue === '') return false;
 
             for (let i = 0; i < itemSelect.options.length; i++) {
                 const option = itemSelect.options[i];
@@ -210,7 +255,9 @@
                 }
             }
 
+            // Tidak ditemukan → tampilkan modal
             selectedItemInfo.value = 'Barang tidak ditemukan';
+            showNotFoundModal(scannedValue);
             return false;
         }
 
@@ -338,14 +385,6 @@
         }
 
         itemSelect.addEventListener('change', updateSelectedItemInfo);
-
-        barcodeInput.addEventListener('input', function () {
-            const scannedValue = barcodeInput.value.trim();
-
-            if (scannedValue !== '') {
-                findItemByCode(scannedValue);
-            }
-        });
 
         barcodeInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
