@@ -41,10 +41,10 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="barcode_input">Scan Barcode / Kode Barang</label>
-                        <input 
-                            type="text" 
-                            id="barcode_input" 
-                            class="form-control" 
+                        <input
+                            type="text"
+                            id="barcode_input"
+                            class="form-control"
                             placeholder="Scan barcode atau ketik kode barang"
                             autofocus
                         >
@@ -55,7 +55,7 @@
                         <select id="item_select" class="form-control">
                             <option value="">-- Pilih Barang --</option>
                             @foreach ($items as $item)
-                                <option 
+                                <option
                                     value="{{ $item->id }}"
                                     data-code="{{ $item->item_code }}"
                                     data-barcode="{{ $item->barcode }}"
@@ -73,10 +73,10 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="selected_item_info">Detail Barang</label>
-                        <input 
-                            type="text" 
-                            id="selected_item_info" 
-                            class="form-control" 
+                        <input
+                            type="text"
+                            id="selected_item_info"
+                            class="form-control"
                             value="-"
                             readonly
                         >
@@ -84,10 +84,10 @@
 
                     <div class="form-group">
                         <label for="quantity_input">Jumlah Keluar</label>
-                        <input 
-                            type="number" 
-                            id="quantity_input" 
-                            class="form-control" 
+                        <input
+                            type="number"
+                            id="quantity_input"
+                            class="form-control"
                             value="1"
                             min="1"
                         >
@@ -126,11 +126,11 @@
 
             <div class="form-group">
                 <label for="source_or_destination">Tujuan Barang / Penerima</label>
-                <input 
-                    type="text" 
-                    id="source_or_destination" 
-                    name="source_or_destination" 
-                    class="form-control" 
+                <input
+                    type="text"
+                    id="source_or_destination"
+                    name="source_or_destination"
+                    class="form-control"
                     value="{{ old('source_or_destination') }}"
                     placeholder="Contoh: Ruang Lab Komputer / Bagian Produksi"
                 >
@@ -138,9 +138,9 @@
 
             <div class="form-group">
                 <label for="description">Keterangan</label>
-                <textarea 
-                    id="description" 
-                    name="description" 
+                <textarea
+                    id="description"
+                    name="description"
                     class="form-control textarea"
                     placeholder="Keterangan tambahan"
                 >{{ old('description') }}</textarea>
@@ -184,23 +184,23 @@
     </div>
 
     <script>
-        const barcodeInput = document.getElementById('barcode_input');
-        const itemSelect = document.getElementById('item_select');
-        const selectedItemInfo = document.getElementById('selected_item_info');
-        const quantityInput = document.getElementById('quantity_input');
-        const addItemBtn = document.getElementById('addItemBtn');
+        const barcodeInput      = document.getElementById('barcode_input');
+        const itemSelect        = document.getElementById('item_select');
+        const selectedItemInfo  = document.getElementById('selected_item_info');
+        const quantityInput     = document.getElementById('quantity_input');
+        const addItemBtn        = document.getElementById('addItemBtn');
         const selectedItemsBody = document.getElementById('selectedItemsBody');
-        const stockOutForm = document.getElementById('stockOutForm');
-        const notFoundModal = document.getElementById('notFoundModal');
+        const stockOutForm      = document.getElementById('stockOutForm');
+        const notFoundModal     = document.getElementById('notFoundModal');
         const modalBarcodeValue = document.getElementById('modalBarcodeValue');
-        const addNewItemBtn = document.getElementById('addNewItemBtn');
+        const addNewItemBtn     = document.getElementById('addNewItemBtn');
 
         let selectedItems = {};
 
         // ===== MODAL FUNCTIONS =====
         function showNotFoundModal(scannedValue) {
             modalBarcodeValue.textContent = scannedValue;
-            addNewItemBtn.href = '{{ route('items.create') }}?barcode=' + encodeURIComponent(scannedValue);
+            addNewItemBtn.href = '{{ route('items.create') }}?barcode=' + encodeURIComponent(scannedValue) + '&redirect_to=stock.out';
             notFoundModal.style.display = 'flex';
         }
 
@@ -209,6 +209,13 @@
             barcodeInput.value = '';
             barcodeInput.focus();
         }
+
+        // Simpan selectedItems ke sessionStorage sebelum pindah halaman
+        addNewItemBtn.addEventListener('click', function () {
+            if (Object.keys(selectedItems).length > 0) {
+                sessionStorage.setItem('stockOutItems', JSON.stringify(selectedItems));
+            }
+        });
 
         // Tutup modal jika klik area luar
         notFoundModal.addEventListener('click', function (e) {
@@ -228,10 +235,10 @@
                 return;
             }
 
-            const code = option.getAttribute('data-code');
-            const name = option.getAttribute('data-name');
+            const code  = option.getAttribute('data-code');
+            const name  = option.getAttribute('data-name');
             const stock = option.getAttribute('data-stock');
-            const unit = option.getAttribute('data-unit');
+            const unit  = option.getAttribute('data-unit');
 
             selectedItemInfo.value = `${code} - ${name} | Stok tersedia: ${stock} ${unit}`;
         }
@@ -242,9 +249,9 @@
             if (scannedValue === '') return false;
 
             for (let i = 0; i < itemSelect.options.length; i++) {
-                const option = itemSelect.options[i];
+                const option  = itemSelect.options[i];
                 const barcode = option.getAttribute('data-barcode');
-                const code = option.getAttribute('data-code');
+                const code    = option.getAttribute('data-code');
 
                 if (barcode === scannedValue || code === scannedValue) {
                     itemSelect.value = option.value;
@@ -270,9 +277,9 @@
                 return;
             }
 
-            const itemId = option.value;
+            const itemId   = option.value;
             const quantity = parseInt(quantityInput.value);
-            const stock = parseInt(option.getAttribute('data-stock'));
+            const stock    = parseInt(option.getAttribute('data-stock'));
 
             if (!quantity || quantity < 1) {
                 alert('Jumlah barang keluar minimal 1.');
@@ -281,7 +288,7 @@
             }
 
             const currentQuantity = selectedItems[itemId] ? selectedItems[itemId].quantity : 0;
-            const totalQuantity = currentQuantity + quantity;
+            const totalQuantity   = currentQuantity + quantity;
 
             if (totalQuantity > stock) {
                 alert('Jumlah barang keluar melebihi stok tersedia. Stok hanya ' + stock + ' ' + option.getAttribute('data-unit') + '.');
@@ -290,12 +297,12 @@
             }
 
             const item = {
-                id: itemId,
-                code: option.getAttribute('data-code'),
-                barcode: option.getAttribute('data-barcode'),
-                name: option.getAttribute('data-name'),
-                stock: stock,
-                unit: option.getAttribute('data-unit'),
+                id      : itemId,
+                code    : option.getAttribute('data-code'),
+                barcode : option.getAttribute('data-barcode'),
+                name    : option.getAttribute('data-name'),
+                stock   : stock,
+                unit    : option.getAttribute('data-unit'),
                 quantity: quantity,
             };
 
@@ -307,9 +314,9 @@
 
             renderSelectedItems();
 
-            barcodeInput.value = '';
-            itemSelect.value = '';
-            quantityInput.value = 1;
+            barcodeInput.value     = '';
+            itemSelect.value       = '';
+            quantityInput.value    = 1;
             selectedItemInfo.value = '-';
             barcodeInput.focus();
         }
@@ -362,11 +369,11 @@
                     <td>${item.name}</td>
                     <td>${item.stock} ${item.unit}</td>
                     <td>
-                        <input 
-                            type="number" 
-                            name="quantities[]" 
-                            class="form-control table-input" 
-                            value="${item.quantity}" 
+                        <input
+                            type="number"
+                            name="quantities[]"
+                            class="form-control table-input"
+                            value="${item.quantity}"
                             min="1"
                             max="${item.stock}"
                             onchange="updateItemQuantity('${item.id}', this.value)"
@@ -386,6 +393,34 @@
 
         itemSelect.addEventListener('change', updateSelectedItemInfo);
 
+        // ===== SAAT MENGETIK → auto-fill, TANPA modal =====
+        barcodeInput.addEventListener('input', function () {
+            const scannedValue = barcodeInput.value.trim();
+
+            if (scannedValue === '') {
+                selectedItemInfo.value = '-';
+                itemSelect.value = '';
+                return;
+            }
+
+            for (let i = 0; i < itemSelect.options.length; i++) {
+                const option  = itemSelect.options[i];
+                const barcode = option.getAttribute('data-barcode');
+                const code    = option.getAttribute('data-code');
+
+                if (barcode === scannedValue || code === scannedValue) {
+                    itemSelect.value = option.value;
+                    updateSelectedItemInfo();
+                    return;
+                }
+            }
+
+            // Belum cocok saat mengetik → diam saja, jangan tampilkan modal
+            selectedItemInfo.value = '-';
+            itemSelect.value = '';
+        });
+
+        // ===== SAAT TEKAN ENTER → kalau tidak ditemukan, tampilkan modal =====
         barcodeInput.addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -424,5 +459,45 @@
         });
 
         updateSelectedItemInfo();
+
+        // ===== RESTORE dari sessionStorage =====
+        const savedItems = sessionStorage.getItem('stockOutItems');
+
+        if (savedItems) {
+            try {
+                const parsed = JSON.parse(savedItems);
+
+                for (const itemId in parsed) {
+                    let existsInDropdown = false;
+
+                    for (let i = 0; i < itemSelect.options.length; i++) {
+                        if (itemSelect.options[i].value == itemId) {
+                            existsInDropdown = true;
+                            break;
+                        }
+                    }
+
+                    if (existsInDropdown) {
+                        selectedItems[itemId] = parsed[itemId];
+                    }
+                }
+
+                if (Object.keys(selectedItems).length > 0) {
+                    renderSelectedItems();
+
+                    const restoreInfo = document.createElement('div');
+                    restoreInfo.className = 'alert alert-success';
+                    restoreInfo.style.marginBottom = '12px';
+                    restoreInfo.innerHTML = '✅ Daftar barang sebelumnya berhasil dipulihkan. Silakan lanjutkan transaksi.';
+                    document.querySelector('.form-card').prepend(restoreInfo);
+
+                    setTimeout(() => restoreInfo.remove(), 4000);
+                }
+            } catch (e) {
+                console.error('Gagal restore sessionStorage:', e);
+            }
+
+            sessionStorage.removeItem('stockOutItems');
+        }
     </script>
 @endsection

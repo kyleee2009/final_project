@@ -58,44 +58,59 @@ class ItemController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'category_id' => 'nullable|exists:categories,id',
-            'item_code' => 'required|string|max:255|unique:items,item_code',
-            'barcode' => 'nullable|string|max:255|unique:items,barcode',
-            'name' => 'required|string|max:255',
-            'unit' => 'required|string|max:50',
-            'stock' => 'required|integer|min:0',
-            'minimum_stock' => 'required|integer|min:0',
-            'location' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
-        ], [
-            'item_code.required' => 'Kode barang wajib diisi.',
-            'item_code.unique' => 'Kode barang sudah digunakan.',
-            'barcode.unique' => 'Barcode sudah digunakan.',
-            'name.required' => 'Nama barang wajib diisi.',
-            'unit.required' => 'Satuan wajib diisi.',
-            'stock.required' => 'Stok wajib diisi.',
-            'stock.integer' => 'Stok harus berupa angka.',
-            'minimum_stock.required' => 'Stok minimum wajib diisi.',
-        ]);
+{
+    $request->validate([
+        'category_id'   => 'nullable|exists:categories,id',
+        'item_code'     => 'required|string|max:255|unique:items,item_code',
+        'barcode'       => 'nullable|string|max:255|unique:items,barcode',
+        'name'          => 'required|string|max:255',
+        'unit'          => 'required|string|max:50',
+        'stock'         => 'required|integer|min:0',
+        'minimum_stock' => 'required|integer|min:0',
+        'location'      => 'nullable|string|max:255',
+        'description'   => 'nullable|string',
+    ], [
+        'item_code.required' => 'Kode barang wajib diisi.',
+        'item_code.unique'   => 'Kode barang sudah digunakan.',
+        'barcode.unique'     => 'Barcode sudah digunakan.',
+        'name.required'      => 'Nama barang wajib diisi.',
+        'unit.required'      => 'Satuan wajib diisi.',
+        'stock.required'     => 'Stok wajib diisi.',
+        'stock.integer'      => 'Stok harus berupa angka.',
+        'minimum_stock.required' => 'Stok minimum wajib diisi.',
+    ]);
 
-        Item::create([
-            'category_id' => $request->category_id,
-            'item_code' => $request->item_code,
-            'barcode' => $request->barcode,
-            'name' => $request->name,
-            'unit' => $request->unit,
-            'stock' => $request->stock,
-            'minimum_stock' => $request->minimum_stock,
-            'location' => $request->location,
-            'description' => $request->description,
-        ]);
+    Item::create([
+        'category_id'   => $request->category_id,
+        'item_code'     => $request->item_code,
+        'barcode'       => $request->barcode,
+        'name'          => $request->name,
+        'unit'          => $request->unit,
+        'stock'         => $request->stock,
+        'minimum_stock' => $request->minimum_stock,
+        'location'      => $request->location,
+        'description'   => $request->description,
+    ]);
 
+    // Redirect sesuai asal halaman
+    $redirectTo = $request->input('redirect_to');
+
+    if ($redirectTo === 'stock.in') {
         return redirect()
-            ->route('items.index')
-            ->with('success', 'Data barang berhasil ditambahkan.');
+            ->route('stock.in')
+            ->with('success', 'Barang berhasil ditambahkan. Silakan lanjutkan transaksi barang masuk.');
     }
+
+    if ($redirectTo === 'stock.out') {
+        return redirect()
+            ->route('stock.out')
+            ->with('success', 'Barang berhasil ditambahkan. Silakan lanjutkan transaksi barang keluar.');
+    }
+
+    return redirect()
+        ->route('items.index')
+        ->with('success', 'Data barang berhasil ditambahkan.');
+}
 
     public function show(Item $item)
     {

@@ -41,10 +41,10 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="barcode_input">Scan Barcode / Kode Barang</label>
-                        <input 
-                            type="text" 
-                            id="barcode_input" 
-                            class="form-control" 
+                        <input
+                            type="text"
+                            id="barcode_input"
+                            class="form-control"
                             placeholder="Scan barcode atau ketik kode barang"
                             autofocus
                         >
@@ -55,7 +55,7 @@
                         <select id="item_select" class="form-control">
                             <option value="">-- Pilih Barang --</option>
                             @foreach ($items as $item)
-                                <option 
+                                <option
                                     value="{{ $item->id }}"
                                     data-code="{{ $item->item_code }}"
                                     data-barcode="{{ $item->barcode }}"
@@ -73,10 +73,10 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="selected_item_info">Detail Barang</label>
-                        <input 
-                            type="text" 
-                            id="selected_item_info" 
-                            class="form-control" 
+                        <input
+                            type="text"
+                            id="selected_item_info"
+                            class="form-control"
                             value="-"
                             readonly
                         >
@@ -84,10 +84,10 @@
 
                     <div class="form-group">
                         <label for="quantity_input">Jumlah Masuk</label>
-                        <input 
-                            type="number" 
-                            id="quantity_input" 
-                            class="form-control" 
+                        <input
+                            type="number"
+                            id="quantity_input"
+                            class="form-control"
                             value="1"
                             min="1"
                         >
@@ -125,11 +125,11 @@
 
             <div class="form-group">
                 <label for="source_or_destination">Sumber Barang / Supplier</label>
-                <input 
-                    type="text" 
-                    id="source_or_destination" 
-                    name="source_or_destination" 
-                    class="form-control" 
+                <input
+                    type="text"
+                    id="source_or_destination"
+                    name="source_or_destination"
+                    class="form-control"
                     value="{{ old('source_or_destination') }}"
                     placeholder="Contoh: Supplier A / Pembelian toko"
                 >
@@ -137,9 +137,9 @@
 
             <div class="form-group">
                 <label for="description">Keterangan</label>
-                <textarea 
-                    id="description" 
-                    name="description" 
+                <textarea
+                    id="description"
+                    name="description"
                     class="form-control textarea"
                     placeholder="Keterangan tambahan"
                 >{{ old('description') }}</textarea>
@@ -181,220 +181,295 @@
             </div>
         </div>
     </div>
+
     <script>
-            const barcodeInput = document.getElementById('barcode_input');
-            const itemSelect = document.getElementById('item_select');
-            const selectedItemInfo = document.getElementById('selected_item_info');
-            const quantityInput = document.getElementById('quantity_input');
-            const addItemBtn = document.getElementById('addItemBtn');
-            const selectedItemsBody = document.getElementById('selectedItemsBody');
-            const emptyRow = document.getElementById('emptyRow');
-            const stockInForm = document.getElementById('stockInForm');
-            const notFoundModal = document.getElementById('notFoundModal');
-            const modalBarcodeValue = document.getElementById('modalBarcodeValue');
-            const addNewItemBtn = document.getElementById('addNewItemBtn');
+        const barcodeInput      = document.getElementById('barcode_input');
+        const itemSelect        = document.getElementById('item_select');
+        const selectedItemInfo  = document.getElementById('selected_item_info');
+        const quantityInput     = document.getElementById('quantity_input');
+        const addItemBtn        = document.getElementById('addItemBtn');
+        const selectedItemsBody = document.getElementById('selectedItemsBody');
+        const stockInForm       = document.getElementById('stockInForm');
+        const notFoundModal     = document.getElementById('notFoundModal');
+        const modalBarcodeValue = document.getElementById('modalBarcodeValue');
+        const addNewItemBtn     = document.getElementById('addNewItemBtn');
 
-            let selectedItems = {};
+        let selectedItems = {};
 
-            // ===== MODAL FUNCTIONS =====
-            function showNotFoundModal(scannedValue) {
-                modalBarcodeValue.textContent = scannedValue;
-                addNewItemBtn.href = '{{ route('items.create') }}?barcode=' + encodeURIComponent(scannedValue);
-                notFoundModal.style.display = 'flex';
+        // ===== MODAL FUNCTIONS =====
+        function showNotFoundModal(scannedValue) {
+            modalBarcodeValue.textContent = scannedValue;
+            addNewItemBtn.href = '{{ route('items.create') }}?barcode=' + encodeURIComponent(scannedValue) + '&redirect_to=stock.in';
+            notFoundModal.style.display = 'flex';
+        }
+
+        function closeNotFoundModal() {
+            notFoundModal.style.display = 'none';
+            barcodeInput.value = '';
+            barcodeInput.focus();
+        }
+
+        // Simpan selectedItems ke sessionStorage sebelum pindah halaman
+        addNewItemBtn.addEventListener('click', function () {
+            if (Object.keys(selectedItems).length > 0) {
+                sessionStorage.setItem('stockInItems', JSON.stringify(selectedItems));
+            }
+        });
+
+        // Tutup modal jika klik area luar
+        notFoundModal.addEventListener('click', function (e) {
+            if (e.target === notFoundModal) closeNotFoundModal();
+        });
+
+        // ===== ITEM FUNCTIONS =====
+        function getSelectedOption() {
+            return itemSelect.options[itemSelect.selectedIndex];
+        }
+
+        function updateSelectedItemInfo() {
+            const option = getSelectedOption();
+
+            if (!option || !option.value) {
+                selectedItemInfo.value = '-';
+                return;
             }
 
-            function closeNotFoundModal() {
-                notFoundModal.style.display = 'none';
-                barcodeInput.value = '';
+            const code  = option.getAttribute('data-code');
+            const name  = option.getAttribute('data-name');
+            const stock = option.getAttribute('data-stock');
+            const unit  = option.getAttribute('data-unit');
+
+            selectedItemInfo.value = `${code} - ${name} | Stok saat ini: ${stock} ${unit}`;
+        }
+
+        function findItemByCode(codeValue) {
+            const scannedValue = codeValue.trim();
+
+            if (scannedValue === '') return false;
+
+            for (let i = 0; i < itemSelect.options.length; i++) {
+                const option  = itemSelect.options[i];
+                const barcode = option.getAttribute('data-barcode');
+                const code    = option.getAttribute('data-code');
+
+                if (barcode === scannedValue || code === scannedValue) {
+                    itemSelect.value = option.value;
+                    updateSelectedItemInfo();
+                    quantityInput.focus();
+                    quantityInput.select();
+                    return true;
+                }
+            }
+
+            // Tidak ditemukan → tampilkan modal
+            selectedItemInfo.value = 'Barang tidak ditemukan';
+            showNotFoundModal(scannedValue);
+            return false;
+        }
+
+        function addItemToList() {
+            const option = getSelectedOption();
+
+            if (!option || !option.value) {
+                alert('Pilih barang atau input kode barang terlebih dahulu.');
                 barcodeInput.focus();
+                return;
             }
 
-            // Tutup modal jika klik area luar
-            notFoundModal.addEventListener('click', function (e) {
-                if (e.target === notFoundModal) closeNotFoundModal();
+            const itemId   = option.value;
+            const quantity = parseInt(quantityInput.value);
+
+            if (!quantity || quantity < 1) {
+                alert('Jumlah barang masuk minimal 1.');
+                quantityInput.focus();
+                return;
+            }
+
+            const item = {
+                id      : itemId,
+                code    : option.getAttribute('data-code'),
+                barcode : option.getAttribute('data-barcode'),
+                name    : option.getAttribute('data-name'),
+                stock   : option.getAttribute('data-stock'),
+                unit    : option.getAttribute('data-unit'),
+                quantity: quantity,
+            };
+
+            if (selectedItems[itemId]) {
+                selectedItems[itemId].quantity += quantity;
+            } else {
+                selectedItems[itemId] = item;
+            }
+
+            renderSelectedItems();
+
+            barcodeInput.value     = '';
+            itemSelect.value       = '';
+            quantityInput.value    = 1;
+            selectedItemInfo.value = '-';
+            barcodeInput.focus();
+        }
+
+        function removeItem(itemId) {
+            delete selectedItems[itemId];
+            renderSelectedItems();
+        }
+
+        function updateItemQuantity(itemId, value) {
+            const quantity = parseInt(value);
+
+            if (!quantity || quantity < 1) {
+                selectedItems[itemId].quantity = 1;
+            } else {
+                selectedItems[itemId].quantity = quantity;
+            }
+
+            renderSelectedItems();
+        }
+
+        function renderSelectedItems() {
+            const itemValues = Object.values(selectedItems);
+            selectedItemsBody.innerHTML = '';
+
+            if (itemValues.length === 0) {
+                selectedItemsBody.innerHTML = `
+                    <tr id="emptyRow">
+                        <td colspan="6" class="empty-text">
+                            Belum ada barang yang ditambahkan.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            itemValues.forEach((item, index) => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        ${item.code}
+                        <input type="hidden" name="item_ids[]" value="${item.id}">
+                    </td>
+                    <td>${item.name}</td>
+                    <td>${item.stock} ${item.unit}</td>
+                    <td>
+                        <input
+                            type="number"
+                            name="quantities[]"
+                            class="form-control table-input"
+                            value="${item.quantity}"
+                            min="1"
+                            onchange="updateItemQuantity('${item.id}', this.value)"
+                        >
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removeItem('${item.id}')">
+                            Hapus
+                        </button>
+                    </td>
+                `;
+
+                selectedItemsBody.appendChild(row);
             });
+        }
 
-            // ===== ITEM FUNCTIONS =====
-            function getSelectedOption() {
-                return itemSelect.options[itemSelect.selectedIndex];
+        itemSelect.addEventListener('change', updateSelectedItemInfo);
+
+        // ===== SAAT MENGETIK → auto-fill, TANPA modal =====
+        barcodeInput.addEventListener('input', function () {
+            const scannedValue = barcodeInput.value.trim();
+
+            if (scannedValue === '') {
+                selectedItemInfo.value = '-';
+                itemSelect.value = '';
+                return;
             }
 
-            function updateSelectedItemInfo() {
-                const option = getSelectedOption();
+            for (let i = 0; i < itemSelect.options.length; i++) {
+                const option  = itemSelect.options[i];
+                const barcode = option.getAttribute('data-barcode');
+                const code    = option.getAttribute('data-code');
 
-                if (!option || !option.value) {
-                    selectedItemInfo.value = '-';
+                if (barcode === scannedValue || code === scannedValue) {
+                    itemSelect.value = option.value;
+                    updateSelectedItemInfo();
                     return;
                 }
-
-                const code = option.getAttribute('data-code');
-                const name = option.getAttribute('data-name');
-                const stock = option.getAttribute('data-stock');
-                const unit = option.getAttribute('data-unit');
-
-                selectedItemInfo.value = `${code} - ${name} | Stok saat ini: ${stock} ${unit}`;
             }
 
-            function findItemByCode(codeValue) {
-                const scannedValue = codeValue.trim();
+            // Belum cocok saat mengetik → diam saja, jangan tampilkan modal
+            selectedItemInfo.value = '-';
+            itemSelect.value = '';
+        });
 
-                if (scannedValue === '') return false;
+        // ===== SAAT TEKAN ENTER → kalau tidak ditemukan, tampilkan modal =====
+        barcodeInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
 
-                for (let i = 0; i < itemSelect.options.length; i++) {
-                    const option = itemSelect.options[i];
-                    const barcode = option.getAttribute('data-barcode');
-                    const code = option.getAttribute('data-code');
+                const scannedValue = barcodeInput.value.trim();
 
-                    if (barcode === scannedValue || code === scannedValue) {
-                        itemSelect.value = option.value;
-                        updateSelectedItemInfo();
-                        quantityInput.focus();
-                        quantityInput.select();
-                        return true;
+                if (scannedValue !== '') {
+                    const found = findItemByCode(scannedValue);
+
+                    if (found) {
+                        addItemToList();
                     }
                 }
-
-                // Tidak ditemukan → tampilkan modal
-                selectedItemInfo.value = 'Barang tidak ditemukan';
-                showNotFoundModal(scannedValue);
-                return false;
             }
+        });
 
-            function addItemToList() {
-                const option = getSelectedOption();
+        addItemBtn.addEventListener('click', addItemToList);
 
-                if (!option || !option.value) {
-                    alert('Pilih barang atau input kode barang terlebih dahulu.');
-                    barcodeInput.focus();
-                    return;
-                }
-
-                const itemId = option.value;
-                const quantity = parseInt(quantityInput.value);
-
-                if (!quantity || quantity < 1) {
-                    alert('Jumlah barang masuk minimal 1.');
-                    quantityInput.focus();
-                    return;
-                }
-
-                const item = {
-                    id: itemId,
-                    code: option.getAttribute('data-code'),
-                    barcode: option.getAttribute('data-barcode'),
-                    name: option.getAttribute('data-name'),
-                    stock: option.getAttribute('data-stock'),
-                    unit: option.getAttribute('data-unit'),
-                    quantity: quantity,
-                };
-
-                if (selectedItems[itemId]) {
-                    selectedItems[itemId].quantity += quantity;
-                } else {
-                    selectedItems[itemId] = item;
-                }
-
-                renderSelectedItems();
-
-                barcodeInput.value = '';
-                itemSelect.value = '';
-                quantityInput.value = 1;
-                selectedItemInfo.value = '-';
+        stockInForm.addEventListener('submit', function (event) {
+            if (Object.keys(selectedItems).length === 0) {
+                event.preventDefault();
+                alert('Minimal tambahkan satu barang ke daftar transaksi.');
                 barcodeInput.focus();
             }
+        });
 
-            function removeItem(itemId) {
-                delete selectedItems[itemId];
-                renderSelectedItems();
-            }
+        updateSelectedItemInfo();
 
-            function updateItemQuantity(itemId, value) {
-                const quantity = parseInt(value);
+        // ===== RESTORE dari sessionStorage =====
+        const savedItems = sessionStorage.getItem('stockInItems');
 
-                if (!quantity || quantity < 1) {
-                    selectedItems[itemId].quantity = 1;
-                } else {
-                    selectedItems[itemId].quantity = quantity;
-                }
+        if (savedItems) {
+            try {
+                const parsed = JSON.parse(savedItems);
 
-                renderSelectedItems();
-            }
+                for (const itemId in parsed) {
+                    let existsInDropdown = false;
 
-            function renderSelectedItems() {
-                const itemValues = Object.values(selectedItems);
-                selectedItemsBody.innerHTML = '';
-
-                if (itemValues.length === 0) {
-                    selectedItemsBody.innerHTML = `
-                        <tr id="emptyRow">
-                            <td colspan="6" class="empty-text">
-                                Belum ada barang yang ditambahkan.
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                itemValues.forEach((item, index) => {
-                    const row = document.createElement('tr');
-
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>
-                            ${item.code}
-                            <input type="hidden" name="item_ids[]" value="${item.id}">
-                        </td>
-                        <td>${item.name}</td>
-                        <td>${item.stock} ${item.unit}</td>
-                        <td>
-                            <input 
-                                type="number" 
-                                name="quantities[]" 
-                                class="form-control table-input" 
-                                value="${item.quantity}" 
-                                min="1"
-                                onchange="updateItemQuantity('${item.id}', this.value)"
-                            >
-                        </td>
-                        <td>
-                            <button type="button" class="btn btn-danger" onclick="removeItem('${item.id}')">
-                                Hapus
-                            </button>
-                        </td>
-                    `;
-
-                    selectedItemsBody.appendChild(row);
-                });
-            }
-
-            itemSelect.addEventListener('change', updateSelectedItemInfo);
-
-            barcodeInput.addEventListener('keydown', function (event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-
-                    const scannedValue = barcodeInput.value.trim();
-
-                    if (scannedValue !== '') {
-                        const found = findItemByCode(scannedValue);
-
-                        if (found) {
-                            addItemToList();
+                    for (let i = 0; i < itemSelect.options.length; i++) {
+                        if (itemSelect.options[i].value == itemId) {
+                            existsInDropdown = true;
+                            break;
                         }
                     }
+
+                    if (existsInDropdown) {
+                        selectedItems[itemId] = parsed[itemId];
+                    }
                 }
-            });
 
-            addItemBtn.addEventListener('click', addItemToList);
+                if (Object.keys(selectedItems).length > 0) {
+                    renderSelectedItems();
 
-            stockInForm.addEventListener('submit', function (event) {
-                if (Object.keys(selectedItems).length === 0) {
-                    event.preventDefault();
-                    alert('Minimal tambahkan satu barang ke daftar transaksi.');
-                    barcodeInput.focus();
+                    const restoreInfo = document.createElement('div');
+                    restoreInfo.className = 'alert alert-success';
+                    restoreInfo.style.marginBottom = '12px';
+                    restoreInfo.innerHTML = '✅ Daftar barang sebelumnya berhasil dipulihkan. Silakan lanjutkan transaksi.';
+                    document.querySelector('.form-card').prepend(restoreInfo);
+
+                    setTimeout(() => restoreInfo.remove(), 4000);
                 }
-            });
+            } catch (e) {
+                console.error('Gagal restore sessionStorage:', e);
+            }
 
-            updateSelectedItemInfo();
-        </script>
+            sessionStorage.removeItem('stockInItems');
+        }
+    </script>
 @endsection

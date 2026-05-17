@@ -26,17 +26,27 @@
             </div>
         @endif
 
+        {{-- Notif jika datang dari halaman transaksi --}}
+        @if (request('redirect_to'))
+            <div class="alert alert-success" style="margin-bottom:16px;">
+                ℹ️ Setelah menyimpan barang ini, kamu akan dikembalikan ke halaman transaksi sebelumnya.
+            </div>
+        @endif
+
         <form action="{{ route('items.store') }}" method="POST">
             @csrf
+
+            {{-- Simpan redirect_to agar controller tahu harus balik ke mana --}}
+            <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
 
             <div class="form-row">
                 <div class="form-group">
                     <label for="item_code">Kode Barang</label>
-                    <input 
-                        type="text" 
-                        id="item_code" 
-                        name="item_code" 
-                        class="form-control" 
+                    <input
+                        type="text"
+                        id="item_code"
+                        name="item_code"
+                        class="form-control"
                         value="{{ old('item_code') }}"
                         placeholder="Contoh: BRG-0001"
                         required
@@ -45,12 +55,12 @@
 
                 <div class="form-group">
                     <label for="barcode">Barcode</label>
-                   <input 
-                        type="text" 
-                        id="barcode" 
-                        name="barcode" 
+                    <input
+                        type="text"
+                        id="barcode"
+                        name="barcode"
                         class="form-control"
-                        value="{{ old('barcode', request('barcode')) }}"  {{-- tambahkan request('barcode') --}}
+                        value="{{ old('barcode', request('barcode')) }}"
                         placeholder="Scan barcode atau isi manual"
                     >
                 </div>
@@ -58,11 +68,11 @@
 
             <div class="form-group">
                 <label for="name">Nama Barang</label>
-                <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    class="form-control" 
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    class="form-control"
                     value="{{ old('name') }}"
                     placeholder="Contoh: Kabel HDMI"
                     required
@@ -84,11 +94,11 @@
 
                 <div class="form-group">
                     <label for="unit">Satuan</label>
-                    <input 
-                        type="text" 
-                        id="unit" 
-                        name="unit" 
-                        class="form-control" 
+                    <input
+                        type="text"
+                        id="unit"
+                        name="unit"
+                        class="form-control"
                         value="{{ old('unit', 'pcs') }}"
                         placeholder="Contoh: pcs, box, meter"
                         required
@@ -99,11 +109,11 @@
             <div class="form-row">
                 <div class="form-group">
                     <label for="stock">Stok Awal</label>
-                    <input 
-                        type="number" 
-                        id="stock" 
-                        name="stock" 
-                        class="form-control" 
+                    <input
+                        type="number"
+                        id="stock"
+                        name="stock"
+                        class="form-control"
                         value="{{ old('stock', 0) }}"
                         min="0"
                         required
@@ -112,11 +122,11 @@
 
                 <div class="form-group">
                     <label for="minimum_stock">Stok Minimum</label>
-                    <input 
-                        type="number" 
-                        id="minimum_stock" 
-                        name="minimum_stock" 
-                        class="form-control" 
+                    <input
+                        type="number"
+                        id="minimum_stock"
+                        name="minimum_stock"
+                        class="form-control"
                         value="{{ old('minimum_stock', 0) }}"
                         min="0"
                         required
@@ -126,11 +136,11 @@
 
             <div class="form-group">
                 <label for="location">Lokasi Barang</label>
-                <input 
-                    type="text" 
-                    id="location" 
-                    name="location" 
-                    class="form-control" 
+                <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    class="form-control"
                     value="{{ old('location') }}"
                     placeholder="Contoh: Rak A1"
                 >
@@ -138,9 +148,9 @@
 
             <div class="form-group">
                 <label for="description">Deskripsi</label>
-                <textarea 
-                    id="description" 
-                    name="description" 
+                <textarea
+                    id="description"
+                    name="description"
                     class="form-control textarea"
                     placeholder="Keterangan tambahan barang"
                 >{{ old('description') }}</textarea>
@@ -151,7 +161,7 @@
                     Simpan
                 </button>
 
-                <a href="{{ route('items.index') }}" class="btn btn-secondary">
+                <a href="{{ request('redirect_to') === 'stock.in' ? route('stock.in') : (request('redirect_to') === 'stock.out' ? route('stock.out') : route('items.index')) }}" class="btn btn-secondary">
                     Batal
                 </a>
             </div>
